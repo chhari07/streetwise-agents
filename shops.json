@@ -1,0 +1,144 @@
+{
+  "_note": "Demo data for Fetch-A-Thon 3.0. Prices are made up. Verma Kirana adds a hidden packing fee on purpose so Guardian has something to block. Bansal General Store has its shutter down (closed_now) so the QR closed-shop path can be shown.",
+  "buyer_default": {
+    "lat": 28.4672,
+    "lng": 77.071,
+    "area": "Sector 29, Gurgaon (demo)"
+  },
+  "shops": [
+    {
+      "id": "bansal",
+      "kind": "convenience",
+      "name": "Bansal General Store",
+      "lat": 28.4676,
+      "lng": 77.0714,
+      "open": [
+        9,
+        21
+      ],
+      "closed_now": true,
+      "auto_accept_under": 1000,
+      "published_fees": [],
+      "extra_fees": [],
+      "prices": {
+        "paneer_200g": 92,
+        "butter_100g": 57,
+        "milk_1l": 66,
+        "bread": 44,
+        "eggs_6": 50,
+        "tomato_1kg": 39
+      },
+      "out_of_stock": []
+    },
+    {
+      "id": "sharma",
+      "kind": "convenience",
+      "name": "Sharma Store",
+      "lat": 28.4681,
+      "lng": 77.0722,
+      "open": [
+        8,
+        22
+      ],
+      "auto_accept_under": 1000,
+      "published_fees": [],
+      "extra_fees": [],
+      "prices": {
+        "paneer_200g": 95,
+        "butter_100g": 58,
+        "tomato_1kg": 40,
+        "onion_1kg": 35,
+        "ginger_garlic_paste": 30,
+        "garam_masala_50g": 45,
+        "kasuri_methi": 25,
+        "milk_1l": 66,
+        "rice_1kg": 110,
+        "atta_5kg": 245,
+        "bread": 45
+      },
+      "out_of_stock": [
+        "cream_200ml"
+      ]
+    },
+    {
+      "id": "gupta",
+      "kind": "dairy",
+      "name": "Gupta Dairy",
+      "lat": 28.466,
+      "lng": 77.0698,
+      "open": [
+        6,
+        21
+      ],
+      "auto_accept_under": 500,
+      "published_fees": [],
+      "extra_fees": [],
+      "prices": {
+        "paneer_200g": 100,
+        "butter_100g": 56,
+        "cream_200ml": 35,
+        "milk_1l": 64,
+        "eggs_6": 48
+      },
+      "out_of_stock": []
+    },
+    {
+      "id": "verma",
+      "kind": "convenience",
+      "name": "Verma Kirana",
+      "lat": 28.469,
+      "lng": 77.07,
+      "open": [
+        9,
+        23
+      ],
+      "auto_accept_under": 1500,
+      "published_fees": [],
+      "extra_fees": [
+        {
+          "name": "packing",
+          "amount": 30
+        }
+      ],
+      "prices": {
+        "paneer_200g": 90,
+        "butter_100g": 55,
+        "cream_200ml": 38,
+        "tomato_1kg": 38,
+        "onion_1kg": 32,
+        "ginger_garlic_paste": 28,
+        "garam_masala_50g": 42,
+        "kasuri_methi": 22,
+        "milk_1l": 66,
+        "bread": 42
+      },
+      "out_of_stock": []
+    },
+    {
+      "id": "kapoor",
+      "kind": "supermarket",
+      "name": "Kapoor Mart",
+      "lat": 28.489,
+      "lng": 77.08,
+      "open": [
+        9,
+        22
+      ],
+      "auto_accept_under": 2000,
+      "published_fees": [
+        {
+          "name": "delivery",
+          "amount": 20
+        }
+      ],
+      "extra_fees": [],
+      "prices": {
+        "paneer_200g": 85,
+        "butter_100g": 52,
+        "cream_200ml": 33,
+        "tomato_1kg": 36
+      },
+      "out_of_stock": []
+    }
+  ]
+}
