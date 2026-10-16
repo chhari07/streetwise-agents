@@ -92,7 +92,8 @@ async function tick(){
     document.getElementById("area").textContent="Last search: "+s.area+" · ring "+s.radius_m+" m";
     if(s.at!==lastAt){lastAt=s.at;map.fitBounds(L.circle([s.lat,s.lng],{radius:s.radius_m}).addTo(layer).getBounds(),{padding:[30,30]})}}
   d.shops.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:p.state=="chosen"?11:8,color:C[p.state],fillColor:C[p.state],fillOpacity:.85,weight:2})
-    .bindTooltip(esc(p.name)+" · "+p.state+(p.why?" ("+esc(p.why)+")":""),{permanent:p.in_search,direction:"top",offset:[0,-8]}).addTo(layer));
+    .bindTooltip(esc(p.name)+" · "+p.state+(p.why?" ("+esc(p.why)+")":""),{permanent:p.in_search,
+      direction:s&&p.lng<s.lng?"left":"right",offset:s&&p.lng<s.lng?[-10,0]:[10,0]}).addTo(layer));  // labels to the outside: no overlap
   document.getElementById("events").innerHTML=d.events.map(e=>'<div class="ev k-'+e.kind+'"><b>'+e.t+'</b>'+esc(e.text)+
     (e.link?' · <a href="'+e.link+'" target="_blank">view tx</a>':"")+"</div>").join("")||'<p class="mu">Waiting for the first search…</p>';
 }
