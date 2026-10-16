@@ -65,6 +65,7 @@ PAGE = """<!doctype html><html><head><meta charset="utf-8"><meta name="viewport"
 <style>
 html,body{margin:0;height:100%;background:#0A0C10;color:#E6EAF0;font:14px/1.45 Inter,system-ui,sans-serif}
 .app{display:grid;grid-template-columns:1fr 360px;height:100%}#map{height:100%}
+.leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.8) contrast(.9)}  /* dark map from the free OSM tiles */
 .side{border-left:1px solid #263040;padding:16px;overflow:auto;background:#0E1116}
 h1{font-size:18px;margin:0}.mu{color:#8A94A6;font-size:12.5px}
 .lg{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}.lg span{display:flex;gap:6px;align-items:center;font-size:12.5px}
@@ -80,7 +81,7 @@ h1{font-size:18px;margin:0}.mu{color:#8A94A6;font-size:12.5px}
 <script>
 const C={open:"#22C55E",closed:"#6B7280",blocked:"#F43F5E",chosen:"#FF5A1F"};
 const map=L.map("map").setView([28.4672,77.0710],16);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{maxZoom:19,subdomains:"abcd",attribution:"© OpenStreetMap © CARTO"}).addTo(map);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
 const layer=L.layerGroup().addTo(map);let lastAt=null;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 async function tick(){
