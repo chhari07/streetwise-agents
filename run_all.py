@@ -1,7 +1,8 @@
 """Runs every Streetwise agent in one process.
 
     python run_all.py           # real run: Grahak gets a mailbox so ASI:One can reach it,
-                                # and the shop owner's YES / NO screen runs on http://localhost:8090
+                                # + shop owner's YES / NO screen on http://localhost:8090, live map on /map
+                                # + agent charge paid in FET on the Fetch.ai testnet (STREETWISE_PAYMENT=testnet)
     python test_flow.py         # local test without ASI:One (see that file)
 
 Every demo shop in shops.json runs its own Merchant (Dukaan) agent with its own address.
@@ -17,8 +18,9 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-if __name__ == "__main__":  # real run: the owner taps YES / NO (set before owner.py is imported)
-    os.environ.setdefault("STREETWISE_OWNER", "panel")
+if __name__ == "__main__":  # real run (set before owner.py / payments.py are imported)
+    os.environ.setdefault("STREETWISE_OWNER", "panel")  # the owner taps YES / NO
+    os.environ.setdefault("STREETWISE_PAYMENT", "testnet")  # agent charge = real FET transfer on the Fetch.ai testnet
 
 from uagents import Agent, Bureau  # noqa: E402
 
@@ -56,10 +58,7 @@ def build(mailbox: bool = True, use_llm: bool = True) -> tuple[Bureau, Agent, li
 
 async def run_split(bureau: Bureau, grahak: Agent):
     import owner
-    jobs = [grahak.run_async(), bureau.run_async()]
-    if owner.MODE == "panel":
-        jobs.append(owner.run_panel())
-    await asyncio.gather(*jobs)
+    await asyncio.gather(grahak.run_async(), bureau.run_async(), owner.run_panel())  # owner screen + /map
 
 
 if __name__ == "__main__":

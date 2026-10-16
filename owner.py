@@ -14,6 +14,8 @@ import time
 
 from aiohttp import web
 
+import grid
+
 MODE = os.getenv("STREETWISE_OWNER", "auto")
 OWNER_TIMEOUT_S = int(os.getenv("STREETWISE_OWNER_TIMEOUT", "60"))
 PANEL_PORT = int(os.getenv("STREETWISE_OWNER_PORT", "8090"))
@@ -65,7 +67,7 @@ def _page() -> str:
     body = "".join(cards) or '<p class="mu" style="margin-top:24px">No new orders. This page refreshes by itself.</p>'
     return (f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
             f'<meta http-equiv="refresh" content="2"><title>Streetwise Shop</title><style>{CSS}</style></head><body><div class="w">'
-            f'<h1>Streetwise Shop</h1><div class="mu">Tap YES if you have the items at this price.</div>{body}'
+            f'<h1>Streetwise Shop</h1><div class="mu">Tap YES if you have the items at this price. · <a href="/map" style="color:#38BDF8">Streetwise Grid map</a></div>{body}'
             f'{"<p class=mu style=margin-top:20px>Recent</p>" + done if done else ""}</div></body></html>')
 
 
@@ -83,10 +85,10 @@ async def _answer(request: web.Request) -> web.Response:
 
 async def run_panel(port: int = PANEL_PORT) -> None:
     app = web.Application()
-    app.add_routes([web.get("/", _index), web.post("/answer", _answer)])
+    app.add_routes([web.get("/", _index), web.post("/answer", _answer), *grid.ROUTES])
     runner = web.AppRunner(app)
     await runner.setup()
     await web.TCPSite(runner, "0.0.0.0", port).start()
-    print(f"Shop owner screen: http://localhost:{port}  (tap YES / NO for each order)", flush=True)
+    print(f"Shop owner screen: http://localhost:{port}  (YES / NO for each order) · live map: http://localhost:{port}/map", flush=True)
     while True:
         await asyncio.sleep(3600)

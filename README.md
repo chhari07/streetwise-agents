@@ -5,8 +5,9 @@
 
 **A local shop connector, not a warehouse.** Buyers ask once in ASI:One. A network of Fetch.ai agents
 finds real shops nearby, collects live quotes from each shop's own agent, blocks hidden fees, and places
-the order. The shop owner confirms with one tap. If the shop you scanned is closed, its QR still helps:
-it sends you to the nearest open shop.
+the order with a **Verified Receipt**. The shop owner confirms with one tap. If the shop you scanned is
+closed, its QR still helps: it sends you to the nearest open shop. Each shop's agent pays Streetwise's
+per-order agent charge in **FET on the Fetch.ai testnet**, checked on-chain.
 
 Built by **Team SOLOX** (Aman Kumar Chhari, solo developer) for **Fetch-A-Thon 3.0**.
 
@@ -29,9 +30,12 @@ Buyer: scan a shop's QR  ─┐
                                                                    ▼
                               ④ Trust Agent: blocks hidden fees, closed shops, wrong totals
                                                                    ▼
-                              Buyer picks an option → order confirmed (Verified Receipt)
+                              Buyer picks an option → order confirmed + Verified Receipt card
                                                                    ▼
-                     Shop pays Streetwise ₹2 agent charge (Fetch.ai Payment Protocol)
+          Shop's agent pays the agent charge: AgentPaymentProtocol, real FET transfer on the
+          Fetch.ai testnet (dorado-1), verified on-chain by the Shopper Agent
+                                                                   ▼
+                     Live Streetwise Grid map (http://localhost:8090/map) shows it all
 ```
 
 ## Agents
@@ -54,8 +58,12 @@ plus Fetch.ai's `AgentPaymentProtocol` (`RequestPayment → CommitPayment → Co
 - **Agent Chat Protocol**: reachable and discoverable from **ASI:One**
 - **ASI1 LLM**: turns free text or Hinglish ("Paneer butter masala for 4, Rs 500 tak") into an item list.
   Prices, totals and fee checks are plain code, so the LLM can't make them up.
-- **AgentPaymentProtocol**: Streetwise (seller role) requests ₹2 per confirmed order from each shop's agent
-  (buyer role). The buyer never pays anything extra.
+- **AgentPaymentProtocol + FET on the testnet**: after a confirmed order, Streetwise (seller role) sends
+  `RequestPayment` to each shop's agent (buyer role). The shop's agent sends **0.002 FET on the Fetch.ai
+  Dorado testnet** from its own wallet (made from its seed, topped up from the testnet faucet) and answers
+  `CommitPayment` with the transaction hash. The Shopper Agent checks the transaction on-chain before
+  `CompletePayment`. 0.002 TESTFET stands in for the planned ₹2 per order. Testnet FET has no money value,
+  and the code refuses any chain other than `dorado-1`. The buyer never pays anything extra.
 
 ## Run
 
@@ -66,11 +74,15 @@ cp .env.example .env              # add your ASI1 key and a long random seed
 
 python test_flow.py --no-llm --offline   # full flow, no API key or internet needed (demo shops)
 python test_flow.py --no-llm --qr --offline   # QR path: scanned shop is closed -> nearby open shops
+python test_flow.py --no-llm --qr --offline --testnet   # + real FET agent charge on the Fetch.ai testnet
+python test_flow.py --no-llm --qr --offline --map       # + live map on http://localhost:8090/map
 python test_flow.py --no-llm             # live OpenStreetMap shops
 python test_flow.py                      # with the ASI1 LLM
 
 python run_all.py                 # real run: Shopper Agent reachable from ASI:One
-                                  # + the shop owner's YES / NO screen on http://localhost:8090
+                                  # + shop owner's YES / NO screen: http://localhost:8090
+                                  # + live Streetwise Grid map:    http://localhost:8090/map
+                                  # + agent charge in FET on the Fetch.ai testnet
 ```
 
 For `run_all.py`: open the Agent inspector link from the log → Connect → Mailbox. Then chat with the agent in ASI:One.
@@ -81,17 +93,20 @@ For `run_all.py`: open the Agent inspector link from the log → Connect → Mai
 - `milk, bread and eggs near Lajpat Nagar Delhi`, then `1`
 - `QR bansal: milk, bread and eggs`: what a QR sticker on Bansal General Store sends. The shop is closed,
   so you get the nearest open shops.
-- With `run_all.py`, open http://localhost:8090 and tap **YES** to confirm the order as the shop owner
+- With `run_all.py`, open http://localhost:8090 and tap **YES** to confirm the order as the shop owner,
+  and watch it all on http://localhost:8090/map
 
 ## What is real and what is demo
 
 - **Real:** the agents and messages, the Agentverse / ASI:One connection, the OpenStreetMap shop search
-  (names, locations, opening hours), the Trust Agent checks, and the payment protocol messages.
+  (names, locations, opening hours), the Trust Agent checks, and the agent-charge payment: a real FET
+  transfer on the Fetch.ai testnet, verified on-chain (offline tests use `STREETWISE_PAYMENT=demo`).
 - **Demo:** prices. Shops haven't joined Streetwise yet, so real map shops get steady demo prices
   (`shop_data.py`), and one shared demo Merchant Agent answers for them. The shops in `shops.json` are
   made-up demo shops, each with its own Merchant Agent. One of them hides a ₹30 packing fee so the Trust
   Agent has something to block, and Bansal General Store has its shutter down to show the QR path.
-- **Orders and payments are demo:** no shop is messaged and no money moves (`STREETWISE_DEMO=1`).
+- **Orders are demo:** no real shop is messaged (`STREETWISE_DEMO=1`). The buyer pays the shop by UPI at
+  pickup, outside the agents. The agent charge uses testnet FET, so no real money moves.
 
 ## Files
 
@@ -100,6 +115,8 @@ For `run_all.py`: open the Agent inspector link from the log → Connect → Mai
 | `run_all.py` | starts every agent (one Merchant Agent per shop) and the owner screen |
 | `test_flow.py` | local end-to-end test: a fake buyer chats exactly like ASI:One |
 | `owner.py` | shop owner's YES / NO screen (`STREETWISE_OWNER=panel`), or an auto rule for tests |
+| `grid.py` | live Streetwise Grid map (Leaflet + OpenStreetMap) fed by the agents |
+| `payments.py` | agent charge: FET transfer + on-chain check on the Fetch.ai testnet (`STREETWISE_PAYMENT=testnet`) |
 | `nearby.py` | OpenStreetMap search (Nominatim, free, no key) with the 500 m → 1 km → 2 km ripple |
 | `shop_data.py` | shop registry, demo prices, opening hours |
 | `catalogue.json`, `shops.json` | items (~120) and demo shops |

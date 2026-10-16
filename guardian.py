@@ -2,6 +2,7 @@
 from uagents import Agent, Context
 
 from models import CheckQuotes, DealOption, PlanPart, Quote, Verdict
+import grid
 from shop_data import get_shop
 
 
@@ -99,6 +100,7 @@ def make_guardian(seed: str, **agent_kwargs) -> Agent:
             problem = find_problem(q)
             if problem:
                 blocked[q.shop_name] = problem
+                grid.blocked(q.shop_id, q.shop_name, problem)
                 ctx.logger.warning(f"BLOCKED {q.shop_name}: {problem}")
             else:
                 ok.append(q)

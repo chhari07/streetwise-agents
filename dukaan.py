@@ -5,14 +5,15 @@ OpenStreetMap haven't joined yet, so one shared demo Dukaan (shop=None) answers 
 
 Orders: the shop owner taps YES / NO (owner.py). Payment: after a confirmed order, Streetwise asks
 the shop's agent for its agent charge with Fetch.ai's AgentPaymentProtocol (this agent is the buyer
-role). Until shops join, it's a demo: no money moves."""
+role). With STREETWISE_PAYMENT=testnet it is a real FET transfer on the Fetch.ai testnet (payments.py)."""
 import uuid
 
 from uagents import Agent, Context, Protocol
-from uagents_core.contrib.protocols.payment import (CancelPayment, CommitPayment, CompletePayment, RequestPayment,
-                                                    payment_protocol_spec)
+from uagents_core.contrib.protocols.payment import (CancelPayment, CommitPayment, CompletePayment, RejectPayment,
+                                                    RequestPayment, payment_protocol_spec)
 
 import owner
+import payments
 from models import Fee, OrderConfirm, OrderRequest, OrderResult, Quote, QuoteLine, QuoteList, QuoteRequest
 from shop_data import DEMO_MODE, get_shop, is_open, label
 
@@ -77,8 +78,18 @@ def make_dukaan(seed: str, shop: dict | None = None, **agent_kwargs) -> Agent:
     @pay.on_message(RequestPayment)
     async def on_request_payment(ctx: Context, sender: str, req: RequestPayment):
         funds = req.accepted_funds[0]
-        tx = f"{'DEMO-' if DEMO_MODE else ''}TX-{uuid.uuid4().hex[:8].upper()}"
-        ctx.logger.info(f"PAYMENT requested: {funds.amount} {funds.currency} for {req.reference} ({req.description}) -> paying, tx {tx}")
+        ctx.logger.info(f"PAYMENT requested: {funds.amount} {funds.currency} ({funds.payment_method}) for {req.reference}")
+        if funds.payment_method == "fet_direct":
+            try:
+                tx = await payments.send(agent.wallet, req.recipient, funds.amount)
+            except Exception as err:
+                ctx.logger.warning(f"PAYMENT failed: {err}")
+                await ctx.send(sender, RejectPayment(reason=f"testnet transfer failed: {str(err)[:120]}"))
+                return
+            ctx.logger.info(f"PAYMENT sent on {payments.CHAIN}: {funds.amount} FET -> {req.recipient}, tx {tx}")
+        else:
+            tx = f"DEMO-TX-{uuid.uuid4().hex[:8].upper()}"
+            ctx.logger.info(f"PAYMENT (demo, no chain): tx {tx}")
         await ctx.send(sender, CommitPayment(funds=funds, recipient=req.recipient, transaction_id=tx,
                                              reference=req.reference, description=req.description))
 

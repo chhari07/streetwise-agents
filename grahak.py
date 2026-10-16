@@ -21,10 +21,12 @@ from uagents_core.contrib.protocols.chat import (
     chat_protocol_spec,
 )
 
-from uagents_core.contrib.protocols.payment import (CommitPayment, CompletePayment, Funds, RejectPayment, RequestPayment,
-                                                    payment_protocol_spec)
+from uagents_core.contrib.protocols.payment import (CancelPayment, CommitPayment, CompletePayment, Funds, RejectPayment,
+                                                    RequestPayment, payment_protocol_spec)
 
+import grid
 import owner
+import payments
 from models import (CheckQuotes, Item, OrderRequest, OrderResult, QuoteList, QuoteRequest, ShopList, ShopOrder,
                     ShopSearch, Verdict)
 import state
@@ -32,7 +34,6 @@ from shop_data import BUYER_DEFAULT, CATALOGUE, DEMO_MODE, ITEMS, REGISTRY, labe
 
 QUOTE_TIMEOUT_S = 8
 ORDER_TIMEOUT_S = owner.OWNER_TIMEOUT_S + 15 if owner.MODE == "panel" else QUOTE_TIMEOUT_S  # owner gets time to tap
-AGENT_CHARGE_INR = 2  # Streetwise's per-order agent charge, paid by the shop (demo until shops join)
 QR = re.compile(r"^\s*(?:qr|scan(?:ned)?)\s*[:#-]?\s*([a-z0-9][\w-]*)\s*[:,\-]?\s*(.*)$", re.I | re.S)
 DEAL_TTL_S = 3 * 3600  # a saved deal older than this is dropped (prices may have changed)
 STATE_FILE = "grahak_state.json"
@@ -350,14 +351,20 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
         else:
             head = f"Order confirmed! (Order ID: {order_id}) Pickup in about 20 min, pay by UPI at the shop."
         ctx.logger.info(f"{order_id}: {'confirmed' if ok else 'not fully confirmed'}")
-        if ok:  # Streetwise's agent charge, paid by each shop's agent (Fetch.ai AgentPaymentProtocol)
+        if ok:
+            out.append("\n" + receipt(order_id, chosen, confirms, deal["addr"]))
+            grid.ordered(order_id, [p.shop_id for p in chosen.plan], [p.shop_name for p in chosen.plan], chosen.total)
+            # Streetwise's agent charge, paid by each shop's agent (Fetch.ai AgentPaymentProtocol)
+            chain = payments.MODE == "testnet"
             for a in groups:
                 await ctx.send(a, RequestPayment(
-                    accepted_funds=[Funds(amount=str(AGENT_CHARGE_INR), currency="INR", payment_method="demo" if DEMO_MODE else "fet_direct")],
-                    recipient=agent.address, deadline_seconds=300, reference=order_id,
-                    description=f"Streetwise agent charge, Rs {AGENT_CHARGE_INR} per order"))
-            out.append(f"\n_Aapko koi extra charge nahi. Dukaan Streetwise ko Rs {AGENT_CHARGE_INR} agent charge deti hai "
-                       "(Fetch.ai Payment Protocol" + (", demo" if DEMO_MODE else "") + ")._")
+                    accepted_funds=[Funds(amount=str(payments.AGENT_CHARGE_FET), currency="FET", payment_method="fet_direct") if chain
+                                    else Funds(amount=str(payments.AGENT_CHARGE_INR), currency="INR", payment_method="demo")],
+                    recipient=str(agent.wallet.address()) if chain else agent.address, deadline_seconds=300, reference=order_id,
+                    description=f"Streetwise agent charge (Rs {payments.AGENT_CHARGE_INR} per order)",
+                    metadata={"chain": payments.CHAIN} if chain else None))
+            out.append(f"\n_Aapko koi extra charge nahi. Dukaan Streetwise ko agent charge deti hai: Fetch.ai Payment Protocol, "
+                       + (f"{payments.AGENT_CHARGE_FET} FET on the Fetch.ai testnet" if chain else "demo") + "._")
         await reply(ctx, buyer, head + "\n" + "\n".join(out), end=True)
 
     @chat.on_message(ChatMessage)
@@ -387,10 +394,39 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
     async def on_ack(ctx: Context, sender: str, msg: ChatAcknowledgement):
         pass
 
+    def receipt(order_id: str, chosen, confirms, addr: dict[str, str]) -> str:
+        """Verified Receipt card: every line and every charge, checked before the buyer pays."""
+        rows, fees = [], 0
+        for p, c in zip(chosen.plan, confirms):
+            items = sum(l.price for l in p.lines)
+            rows += [f"| {label(l.name)} x{l.qty} | {p.shop_name} | {l.price} |" for l in p.lines]
+            fees += p.subtotal - items
+        rows.append(f"| Published fees | | {fees} |")
+        rows.append("| Hidden fees | | **0** |")
+        signers = " · ".join(f"{p.shop_name} `{addr[p.shop_id][:10]}…{addr[p.shop_id][-4:]}`" for p in chosen.plan)
+        return "\n".join([f"**VERIFIED RECEIPT · {order_id}**", "", "| Item | Shop | Rs |", "|---|---|---|", *rows,
+                           f"| **TOTAL** | | **Rs {chosen.total}** |", "",
+                           "Trust Agent checked: ✓ shops open ✓ no hidden fee ✓ price same as quote ✓ owner confirmed",
+                           f"Agreed by: Shopper Agent `{agent.address[:10]}…{agent.address[-4:]}` · {signers}"])
+
     @pay.on_message(CommitPayment)
     async def on_commit(ctx: Context, sender: str, msg: CommitPayment):
-        ctx.logger.info(f"PAYMENT received: {msg.funds.amount} {msg.funds.currency} for {msg.reference}, tx {msg.transaction_id}")
-        await ctx.send(sender, CompletePayment(transaction_id=msg.transaction_id))
+        tx, f = msg.transaction_id, msg.funds
+        if f.payment_method == "fet_direct":
+            try:
+                good = await payments.verify(tx, str(agent.wallet.address()), f.amount)
+            except Exception as err:
+                ctx.logger.warning(f"PAYMENT check failed for tx {tx}: {err}")
+                good = False
+            if not good:
+                await ctx.send(sender, CancelPayment(transaction_id=tx, reason="transaction not found or wrong amount"))
+                return
+            ctx.logger.info(f"PAYMENT verified on-chain: {f.amount} FET for {msg.reference}, tx {tx}")
+            grid.paid(f"{f.amount} FET agent charge for {msg.reference} (verified on-chain)", tx)
+        else:
+            ctx.logger.info(f"PAYMENT received: {f.amount} {f.currency} for {msg.reference}, tx {tx}")
+            grid.paid(f"{f.amount} {f.currency} agent charge for {msg.reference} (demo)", tx)
+        await ctx.send(sender, CompletePayment(transaction_id=tx))
 
     @pay.on_message(RejectPayment)
     async def on_reject(ctx: Context, sender: str, msg: RejectPayment):

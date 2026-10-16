@@ -5,6 +5,8 @@
     python test_flow.py --offline  # no OpenStreetMap: tests the shops.json fallback
     python test_flow.py --say "milk and bread near Lajpat Nagar Delhi" haan
     python test_flow.py --qr       # QR path: scans Bansal General Store (shutter down) -> nearby open shops
+    python test_flow.py --map      # also serve the live map on http://localhost:8090/map while it runs
+    python test_flow.py --testnet  # agent charge as a real FET transfer on the Fetch.ai testnet (needs internet)
 
 Steps: "Hello" -> "Paneer butter masala for 4 near Sector 29 Gurgaon, Rs 500 tak" -> "haan". Prints every reply, then exits."""
 import asyncio
@@ -16,6 +18,8 @@ os.environ.setdefault("GRAHAK_SEED", "local test seed for streetwise only")
 if not os.getenv("STREETWISE_STATE_DIR"):  # keep test memory away from the live agent's state/ folder
     import tempfile
     os.environ["STREETWISE_STATE_DIR"] = tempfile.mkdtemp(prefix="streetwise-test-")
+if "--testnet" in sys.argv:
+    os.environ["STREETWISE_PAYMENT"] = "testnet"
 if "--offline" in sys.argv:
     os.environ["STREETWISE_OFFLINE"] = "1"
 
@@ -56,7 +60,7 @@ async def on_reply(ctx: Context, sender: str, msg: ChatMessage):
     if state["step"] < len(STEPS):
         await say(ctx)
     else:
-        await asyncio.sleep(2)  # let the agent-charge payment messages finish
+        await asyncio.sleep(40 if os.getenv("STREETWISE_PAYMENT") == "testnet" else 25 if "--map" in sys.argv else 2)  # let the agent-charge payment finish
         print("\nTEST DONE: all steps answered.", flush=True)
         os._exit(0)
 
@@ -71,9 +75,12 @@ bureau.add(buyer)
 
 
 async def watchdog():
-    await asyncio.sleep(90)
-    print("\nTEST FAILED: no full answer within 90 s.", flush=True)
+    await asyncio.sleep(150)
+    print("\nTEST FAILED: no full answer within 150 s.", flush=True)
     os._exit(1)
 
 asyncio.get_event_loop().create_task(watchdog())
+if "--map" in sys.argv:  # also serve the owner screen + live map on http://localhost:8090 during the test
+    import owner  # noqa: E402
+    asyncio.get_event_loop().create_task(owner.run_panel())
 bureau.run()

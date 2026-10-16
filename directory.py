@@ -11,6 +11,7 @@ import asyncio
 
 from uagents import Agent, Context
 
+import grid
 from models import ShopInfo, ShopList, ShopSearch
 from nearby import geocode, osm_shops, ring_of, ripple
 from shop_data import BUYER_DEFAULT, REGISTRY, SHOPS, demo_shop, distance_m, real_hours, register, trick_shop
@@ -26,10 +27,10 @@ def make_directory(seed: str, dukaan_address: str, shop_agents: dict[str, str] |
         return ShopInfo(shop_id=s["id"], name=s["name"], address=shop_agents.get(s["id"], dukaan_address),
                         distance_m=dist, open_24x7=always, lat=s["lat"], lng=s["lng"])
 
-    def fallback(lat: float, lng: float, radius_m: int) -> tuple[list[ShopInfo], int]:
+    def fallback(lat: float, lng: float, radius_m: int) -> tuple[list[ShopInfo], int, tuple[float, float]]:
         def near(la, lg):
             found = ripple([{**s, "distance_m": distance_m(la, lg, s["lat"], s["lng"])} for s in SHOPS], radius_m)
-            return [info(s, s["distance_m"]) for s in found], ring_of(found, radius_m)
+            return [info(s, s["distance_m"]) for s in found], ring_of(found, radius_m), (la, lg)
         # buyer is far from the demo shops -> show them around the demo area instead
         got = near(lat, lng)
         return got if got[0] else near(BUYER_DEFAULT["lat"], BUYER_DEFAULT["lng"])
@@ -58,7 +59,7 @@ def make_directory(seed: str, dukaan_address: str, shop_agents: dict[str, str] |
             found = [info(s, s["distance_m"], s["id"] in always) for s in osm]
             radius, demo = ring_of(osm, req.radius_m), True
         else:
-            found, radius = fallback(lat, lng, req.radius_m)
+            found, radius, (lat, lng) = fallback(lat, lng, req.radius_m)
             found.sort(key=lambda s: s.distance_m)
             demo = False
             note = ("Live map search abhi band hai, demo dukaanein dikha rahe hain." if osm is None else
@@ -66,6 +67,7 @@ def make_directory(seed: str, dukaan_address: str, shop_agents: dict[str, str] |
                     "isliye demo dukaanein (Sector 29 Gurgaon) dikha rahe hain.")
         ctx.logger.info(f"{len(found)} shops within {radius} m of {area[:40]} ({'OpenStreetMap' if demo else 'shops.json'}): "
                         + ", ".join(s.name for s in found))
+        grid.searched(lat, lng, radius, area, [s.shop_id for s in found])
         await ctx.send(sender, ShopList(shops=found, area=area, demo_prices=demo, note=note.strip(), radius_m=radius))
 
     return agent
