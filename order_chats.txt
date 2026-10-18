@@ -1,0 +1,376 @@
+STREETWISE: SAMPLE ORDER CHATS
+==============================
+Seven orders, each with its own items (no item is repeated across orders).
+Each chat below is a real test run (18 Oct 2026): live map shops, demo prices.
+Shop names, prices and the blocked shop can change on every run.
+
+BEFORE YOU START
+----------------
+1. In this folder:  source .venv/bin/activate  then  python run_all.py
+2. Open the "Agent inspector" link from the log -> Connect -> Mailbox.
+3. Open http://localhost:8090 (shop owner YES / NO) and http://localhost:8090/map (live map).
+4. In ASI:One, chat with:
+   agent1qfv4qg39ul92cqj29degg2zs36gkr04ga59kwd85eqr0xlmedsr07zveljw
+5. Type the BUYER lines below. After you pick an option, tap YES on the
+   owner screen within 60 seconds (in these tests the owner said YES automatically).
+
+TIPS
+----
+- Reply 1 / 2 / 3 to pick an option. "haan" always means option 1.
+- If an order shows only option 1, reply 1 or haan.
+- No "near <area>"? The agent asks "Aap kahan hain?". Reply with an area or pincode.
+- Don't use an item word in the area name (e.g. "Salt Lake" adds salt).
+
+
+################################################################
+ORDER 1: Breakfast
+################################################################
+
+
+BUYER > oats, honey, banana and peanut butter near Koramangala Bangalore
+SHOPPER AGENT > Item list: Peanut butter 340 g x1, Banana (6) x1, Honey 250 g x1, Oats 500 g x1
+Area: Koramangala, Sri Lakshmi Devi Ward · 500 m ke andar
+
+6 dukaanon ne daam bheje. Aapke options:
+
+1. Sabse sasta: Rs 449
+- Sumith Provision & Condiments (178 m): Peanut butter 340 g x1 (Rs 179), Banana (6) x1 (Rs 44), Honey 250 g x1 (Rs 128), Oats 500 g x1 (Rs 98) = Rs 449
+
+2. Ek hi dukaan: Rs 474
+- Brown Tree Super (332 m): Peanut butter 340 g x1 (Rs 198), Banana (6) x1 (Rs 42), Honey 250 g x1 (Rs 141), Oats 500 g x1 (Rs 93) = Rs 474
+
+3. Sabse paas + Ek hi dukaan: Rs 475
+- Sowbhagya Traders (113 m): Peanut butter 340 g x1 (Rs 197), Banana (6) x1 (Rs 43), Honey 250 g x1 (Rs 127), Oats 500 g x1 (Rs 108) = Rs 475
+
+Guardian ne Nature's Basket ko block kiya: hidden Rs 30 packing fee
+
+_Yeh asli paas ki dukaanein hain (OpenStreetMap), par abhi Streetwise par nahi hain: daam demo hain._
+
+Kaunsa order karein? Sirf number likhein: 1 / 2 / 3. Ya haan likhein option 1 ke liye.
+
+BUYER > 1
+SHOPPER AGENT > Demo order confirmed! (Order ID: SW-DEMO-D849)
+Option 1 (Sabse sasta):
+- Sumith Provision & Condiments: confirmed, Rs 449
+
+_Yeh demo order hai: dukaan ko asli message nahi gaya, koi paisa nahi laga. Jab dukaan Streetwise par judegi, tab asli order jaayega._
+
+VERIFIED RECEIPT · SW-DEMO-D849
+
+| Item | Shop | Rs |
+|---|---|---|
+| Peanut butter 340 g x1 | Sumith Provision & Condiments | 179 |
+| Banana (6) x1 | Sumith Provision & Condiments | 44 |
+| Honey 250 g x1 | Sumith Provision & Condiments | 128 |
+| Oats 500 g x1 | Sumith Provision & Condiments | 98 |
+| Published fees | | 0 |
+| Hidden fees | | 0 |
+| TOTAL | | Rs 449 |
+
+Trust Agent checked: ✓ shops open ✓ no hidden fee ✓ price same as quote ✓ owner confirmed
+Agreed by: Shopper Agent `agent1qg5x…6h05` · Sumith Provision & Condiments `agent1qvv7…sg4d`
+
+_Aapko koi extra charge nahi. Dukaan Streetwise ko agent charge deti hai: Fetch.ai Payment Protocol, demo._
+
+
+################################################################
+ORDER 2: Cleaning
+################################################################
+
+
+BUYER > detergent, floor cleaner, toilet cleaner and garbage bags near Andheri West Mumbai
+SHOPPER AGENT > Item list: Toilet cleaner 500 ml x1, Floor cleaner 500 ml x1, Garbage bags (30) x1, Detergent powder 1 kg x1
+Area: Andheri West, K/W Ward · 2 km tak
+
+7 dukaanon ne daam bheje. Aapke options:
+
+1. Sabse sasta: Rs 415
+- Gala Traders (1307 m): Toilet cleaner 500 ml x1 (Rs 98) = Rs 98
+- Alfa 1 (1144 m): Floor cleaner 500 ml x1 (Rs 114), Garbage bags (30) x1 (Rs 82), Detergent powder 1 kg x1 (Rs 121) = Rs 317
+
+2. Sabse paas + Ek hi dukaan: Rs 423
+- Alfa 1 (1144 m): Toilet cleaner 500 ml x1 (Rs 106), Floor cleaner 500 ml x1 (Rs 114), Garbage bags (30) x1 (Rs 82), Detergent powder 1 kg x1 (Rs 121) = Rs 423
+
+3. Ek hi dukaan: Rs 432
+- Health & More (1966 m · 24x7): Toilet cleaner 500 ml x1 (Rs 98), Floor cleaner 500 ml x1 (Rs 117), Garbage bags (30) x1 (Rs 97), Detergent powder 1 kg x1 (Rs 120) = Rs 432
+
+Guardian ne Apna Bazar ko block kiya: hidden Rs 30 packing fee
+
+_Yeh asli paas ki dukaanein hain (OpenStreetMap), par abhi Streetwise par nahi hain: daam demo hain._
+
+Kaunsa order karein? Sirf number likhein: 1 / 2 / 3. Ya haan likhein option 1 ke liye.
+
+BUYER > 1
+SHOPPER AGENT > Demo order confirmed! (Order ID: SW-DEMO-2C10)
+Option 1 (Sabse sasta):
+- Gala Traders: confirmed, Rs 98
+- Alfa 1: confirmed, Rs 317
+
+_Yeh demo order hai: dukaan ko asli message nahi gaya, koi paisa nahi laga. Jab dukaan Streetwise par judegi, tab asli order jaayega._
+
+VERIFIED RECEIPT · SW-DEMO-2C10
+
+| Item | Shop | Rs |
+|---|---|---|
+| Toilet cleaner 500 ml x1 | Gala Traders | 98 |
+| Floor cleaner 500 ml x1 | Alfa 1 | 114 |
+| Garbage bags (30) x1 | Alfa 1 | 82 |
+| Detergent powder 1 kg x1 | Alfa 1 | 121 |
+| Published fees | | 0 |
+| Hidden fees | | 0 |
+| TOTAL | | Rs 415 |
+
+Trust Agent checked: ✓ shops open ✓ no hidden fee ✓ price same as quote ✓ owner confirmed
+Agreed by: Shopper Agent `agent1qg5x…6h05` · Gala Traders `agent1qvv7…sg4d` · Alfa 1 `agent1qvv7…sg4d`
+
+_Aapko koi extra charge nahi. Dukaan Streetwise ko agent charge deti hai: Fetch.ai Payment Protocol, demo._
+
+
+################################################################
+ORDER 3: Rajma chawal
+################################################################
+
+
+BUYER > rajma, basmati rice, jeera and onion near Lajpat Nagar Delhi, Rs 500 tak
+SHOPPER AGENT > Item list: Basmati rice 1 kg x1, Onion 1 kg x1, Rajma 500 g x1, Jeera (cumin) 100 g x1
+Area: Lajpat Nagar, Central · 500 m ke andar
+
+6 dukaanon ne daam bheje. Aapke options:
+
+1. Sabse sasta: Rs 289
+- 24Seven (315 m · 24x7): Basmati rice 1 kg x1 (Rs 108), Onion 1 kg x1 (Rs 32), Rajma 500 g x1 (Rs 87), Jeera (cumin) 100 g x1 (Rs 62) = Rs 289
+
+2. Sabse paas + Ek hi dukaan: Rs 297
+- Dhan Laxmi Store (101 m): Basmati rice 1 kg x1 (Rs 112), Onion 1 kg x1 (Rs 36), Rajma 500 g x1 (Rs 89), Jeera (cumin) 100 g x1 (Rs 60) = Rs 297
+
+3. Ek hi dukaan: Rs 304
+- Munafa Mart (440 m): Basmati rice 1 kg x1 (Rs 100), Onion 1 kg x1 (Rs 37), Rajma 500 g x1 (Rs 100), Jeera (cumin) 100 g x1 (Rs 67) = Rs 304
+
+Guardian ne Safal ko block kiya: hidden Rs 30 packing fee
+
+_Yeh asli paas ki dukaanein hain (OpenStreetMap), par abhi Streetwise par nahi hain: daam demo hain._
+
+Kaunsa order karein? Sirf number likhein: 1 / 2 / 3. Ya haan likhein option 1 ke liye.
+
+BUYER > haan
+SHOPPER AGENT > Demo order confirmed! (Order ID: SW-DEMO-CE42)
+Option 1 (Sabse sasta):
+- 24Seven: confirmed, Rs 289
+
+_Yeh demo order hai: dukaan ko asli message nahi gaya, koi paisa nahi laga. Jab dukaan Streetwise par judegi, tab asli order jaayega._
+
+VERIFIED RECEIPT · SW-DEMO-CE42
+
+| Item | Shop | Rs |
+|---|---|---|
+| Basmati rice 1 kg x1 | 24Seven | 108 |
+| Onion 1 kg x1 | 24Seven | 32 |
+| Rajma 500 g x1 | 24Seven | 87 |
+| Jeera (cumin) 100 g x1 | 24Seven | 62 |
+| Published fees | | 0 |
+| Hidden fees | | 0 |
+| TOTAL | | Rs 289 |
+
+Trust Agent checked: ✓ shops open ✓ no hidden fee ✓ price same as quote ✓ owner confirmed
+Agreed by: Shopper Agent `agent1qg5x…6h05` · 24Seven `agent1qvv7…sg4d`
+
+_Aapko koi extra charge nahi. Dukaan Streetwise ko agent charge deti hai: Fetch.ai Payment Protocol, demo._
+
+
+################################################################
+ORDER 4: Chai time
+################################################################
+
+
+BUYER > chai patti, sugar, parle-g and namkeen near Sector 14 Gurgaon
+SHOPPER AGENT > Item list: Tea (chai patti) 250 g x1, Glucose biscuits (Parle-G) 250 g x1, Namkeen (bhujia) 400 g x1, Sugar 1 kg x1
+Area: Sector 14, Gurgaon · 2 km tak
+
+1 dukaanon ne daam bheje. Aapke options:
+
+1. Sabse sasta + Sabse paas: Rs 318
+- Reliance mart (1575 m): Tea (chai patti) 250 g x1 (Rs 142), Glucose biscuits (Parle-G) 250 g x1 (Rs 25), Namkeen (bhujia) 400 g x1 (Rs 103), Sugar 1 kg x1 (Rs 48) = Rs 318
+
+_Yeh asli paas ki dukaanein hain (OpenStreetMap), par abhi Streetwise par nahi hain: daam demo hain._
+
+Kaunsa order karein? Sirf number likhein: 1. Ya haan likhein option 1 ke liye.
+
+BUYER > 1
+SHOPPER AGENT > Demo order confirmed! (Order ID: SW-DEMO-2EAE)
+Option 1 (Sabse sasta + Sabse paas):
+- Reliance mart: confirmed, Rs 318
+
+_Yeh demo order hai: dukaan ko asli message nahi gaya, koi paisa nahi laga. Jab dukaan Streetwise par judegi, tab asli order jaayega._
+
+VERIFIED RECEIPT · SW-DEMO-2EAE
+
+| Item | Shop | Rs |
+|---|---|---|
+| Tea (chai patti) 250 g x1 | Reliance mart | 142 |
+| Glucose biscuits (Parle-G) 250 g x1 | Reliance mart | 25 |
+| Namkeen (bhujia) 400 g x1 | Reliance mart | 103 |
+| Sugar 1 kg x1 | Reliance mart | 48 |
+| Published fees | | 0 |
+| Hidden fees | | 0 |
+| TOTAL | | Rs 318 |
+
+Trust Agent checked: ✓ shops open ✓ no hidden fee ✓ price same as quote ✓ owner confirmed
+Agreed by: Shopper Agent `agent1qg5x…6h05` · Reliance mart `agent1qvv7…sg4d`
+
+_Aapko koi extra charge nahi. Dukaan Streetwise ko agent charge deti hai: Fetch.ai Payment Protocol, demo._
+
+
+################################################################
+ORDER 5: Bathroom
+################################################################
+
+
+BUYER > shampoo, toothpaste, toothbrush and bath soap near Bandra West Mumbai
+SHOPPER AGENT > Item list: Toothpaste 150 g x1, Toothbrush x1, Bath soap (4-pack) x1, Shampoo 180 ml x1
+Area: Bandra West, Mumbai Zone 3 · 500 m ke andar
+
+6 dukaanon ne daam bheje. Aapke options:
+
+1. Sabse sasta: Rs 469
+- Benzer Stores (267 m): Toothpaste 150 g x1 (Rs 106), Toothbrush x1 (Rs 41), Shampoo 180 ml x1 (Rs 176) = Rs 323
+- Roman (157 m): Bath soap (4-pack) x1 (Rs 146) = Rs 146
+
+2. Ek hi dukaan: Rs 475
+- Prince Super Market (220 m): Toothpaste 150 g x1 (Rs 115), Toothbrush x1 (Rs 41), Bath soap (4-pack) x1 (Rs 158), Shampoo 180 ml x1 (Rs 161) = Rs 475
+
+3. Sabse paas + Ek hi dukaan: Rs 476
+- Roman (157 m): Toothpaste 150 g x1 (Rs 111), Toothbrush x1 (Rs 37), Bath soap (4-pack) x1 (Rs 146), Shampoo 180 ml x1 (Rs 182) = Rs 476
+
+Guardian ne Nature's Basket ko block kiya: hidden Rs 30 packing fee
+
+_Yeh asli paas ki dukaanein hain (OpenStreetMap), par abhi Streetwise par nahi hain: daam demo hain._
+
+Kaunsa order karein? Sirf number likhein: 1 / 2 / 3. Ya haan likhein option 1 ke liye.
+
+BUYER > 1
+SHOPPER AGENT > Demo order confirmed! (Order ID: SW-DEMO-90D8)
+Option 1 (Sabse sasta):
+- Benzer Stores: confirmed, Rs 323
+- Roman: confirmed, Rs 146
+
+_Yeh demo order hai: dukaan ko asli message nahi gaya, koi paisa nahi laga. Jab dukaan Streetwise par judegi, tab asli order jaayega._
+
+VERIFIED RECEIPT · SW-DEMO-90D8
+
+| Item | Shop | Rs |
+|---|---|---|
+| Toothpaste 150 g x1 | Benzer Stores | 106 |
+| Toothbrush x1 | Benzer Stores | 41 |
+| Shampoo 180 ml x1 | Benzer Stores | 176 |
+| Bath soap (4-pack) x1 | Roman | 146 |
+| Published fees | | 0 |
+| Hidden fees | | 0 |
+| TOTAL | | Rs 469 |
+
+Trust Agent checked: ✓ shops open ✓ no hidden fee ✓ price same as quote ✓ owner confirmed
+Agreed by: Shopper Agent `agent1qg5x…6h05` · Benzer Stores `agent1qvv7…sg4d` · Roman `agent1qvv7…sg4d`
+
+_Aapko koi extra charge nahi. Dukaan Streetwise ko agent charge deti hai: Fetch.ai Payment Protocol, demo._
+
+
+################################################################
+ORDER 6: Pav bhaji
+################################################################
+
+
+BUYER > pav, potato, capsicum and butter near Kothrud Pune
+SHOPPER AGENT > Item list: Capsicum 500 g x1, Butter 100 g x1, Potato 1 kg x1, Pav (6) x1
+Area: Kothrud, Karve Nagar · 1 km tak
+
+3 dukaanon ne daam bheje. Aapke options:
+
+1. Sabse sasta: Rs 152
+- Badhai Sweets (607 m): Capsicum 500 g x1 (Rs 37), Butter 100 g x1 (Rs 58), Potato 1 kg x1 (Rs 27) = Rs 122
+- Laxmi Super Shoppee (852 m): Pav (6) x1 (Rs 30) = Rs 30
+
+2. Sabse paas + Ek hi dukaan: Rs 153
+- Laxmi Super Shoppee (852 m): Capsicum 500 g x1 (Rs 36), Butter 100 g x1 (Rs 57), Potato 1 kg x1 (Rs 30), Pav (6) x1 (Rs 30) = Rs 153
+
+Guardian ne Shrinath General Store ko block kiya: hidden Rs 30 packing fee
+
+_Yeh asli paas ki dukaanein hain (OpenStreetMap), par abhi Streetwise par nahi hain: daam demo hain._
+
+Kaunsa order karein? Sirf number likhein: 1 / 2. Ya haan likhein option 1 ke liye.
+
+BUYER > haan
+SHOPPER AGENT > Demo order confirmed! (Order ID: SW-DEMO-1083)
+Option 1 (Sabse sasta):
+- Badhai Sweets: confirmed, Rs 122
+- Laxmi Super Shoppee: confirmed, Rs 30
+
+_Yeh demo order hai: dukaan ko asli message nahi gaya, koi paisa nahi laga. Jab dukaan Streetwise par judegi, tab asli order jaayega._
+
+VERIFIED RECEIPT · SW-DEMO-1083
+
+| Item | Shop | Rs |
+|---|---|---|
+| Capsicum 500 g x1 | Badhai Sweets | 37 |
+| Butter 100 g x1 | Badhai Sweets | 58 |
+| Potato 1 kg x1 | Badhai Sweets | 27 |
+| Pav (6) x1 | Laxmi Super Shoppee | 30 |
+| Published fees | | 0 |
+| Hidden fees | | 0 |
+| TOTAL | | Rs 152 |
+
+Trust Agent checked: ✓ shops open ✓ no hidden fee ✓ price same as quote ✓ owner confirmed
+Agreed by: Shopper Agent `agent1qg5x…6h05` · Badhai Sweets `agent1qvv7…sg4d` · Laxmi Super Shoppee `agent1qvv7…sg4d`
+
+_Aapko koi extra charge nahi. Dukaan Streetwise ko agent charge deti hai: Fetch.ai Payment Protocol, demo._
+
+
+################################################################
+ORDER 7: QR scan (shop closed)
+################################################################
+
+
+BUYER > QR bansal: milk, bread and eggs
+SHOPPER AGENT > Aapne Bansal General Store ka QR scan kiya, par dukaan abhi band hai. Paas ki khuli dukaanein dekh raha hoon (500 m → 1 km → 2 km).
+
+Item list: Bread x1, Milk 1 L x1, Eggs (6) x1
+Area: Sector 29, Gurgaon (demo) · 2 km tak
+
+7 dukaanon ne daam bheje. Aapke options:
+
+1. Sabse sasta + Sabse paas: Rs 152
+- Ellementry Gurugram (844 m): Bread x1 (Rs 42), Milk 1 L x1 (Rs 65), Eggs (6) x1 (Rs 45) = Rs 152
+
+2. Ek hi dukaan: Rs 159
+- for Earth's Sake (848 m): Bread x1 (Rs 41), Milk 1 L x1 (Rs 72), Eggs (6) x1 (Rs 46) = Rs 159
+
+3. Ek hi dukaan: Rs 162
+- Bazar (1252 m): Bread x1 (Rs 40), Milk 1 L x1 (Rs 72), Eggs (6) x1 (Rs 50) = Rs 162
+
+Guardian ne Reliance mart ko block kiya: hidden Rs 30 packing fee
+
+_Yeh asli paas ki dukaanein hain (OpenStreetMap), par abhi Streetwise par nahi hain: daam demo hain._
+
+Kaunsa order karein? Sirf number likhein: 1 / 2 / 3. Ya haan likhein option 1 ke liye.
+
+BUYER > haan
+SHOPPER AGENT > Demo order confirmed! (Order ID: SW-DEMO-FE2B)
+Option 1 (Sabse sasta + Sabse paas):
+- Ellementry Gurugram: confirmed, Rs 152
+
+_Yeh demo order hai: dukaan ko asli message nahi gaya, koi paisa nahi laga. Jab dukaan Streetwise par judegi, tab asli order jaayega._
+
+VERIFIED RECEIPT · SW-DEMO-FE2B
+
+| Item | Shop | Rs |
+|---|---|---|
+| Bread x1 | Ellementry Gurugram | 42 |
+| Milk 1 L x1 | Ellementry Gurugram | 65 |
+| Eggs (6) x1 | Ellementry Gurugram | 45 |
+| Published fees | | 0 |
+| Hidden fees | | 0 |
+| TOTAL | | Rs 152 |
+
+Trust Agent checked: ✓ shops open ✓ no hidden fee ✓ price same as quote ✓ owner confirmed
+Agreed by: Shopper Agent `agent1qg5x…6h05` · Ellementry Gurugram `agent1qvv7…sg4d`
+
+_Aapko koi extra charge nahi. Dukaan Streetwise ko agent charge deti hai: Fetch.ai Payment Protocol, demo._
+
