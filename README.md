@@ -90,8 +90,9 @@ python run_all.py                 # real run: Shopper Agent reachable from ASI:O
 
 ### Live location
 
-When the buyer doesn't say where they are (or types `live location`), the Shopper Agent sends a one-time
-link. The buyer taps **Share my live location**, the browser's GPS goes back to the agent, and shops are
+At the start of a chat (even a plain "hi") the Shopper Agent asks for the buyer's current location with a
+one-time link, and again whenever it doesn't know where they are (or they type `live location`). A location
+counts as current for 2 hours; after that the agent asks again. The buyer taps **Share my live location**, the browser's GPS goes back to the agent, and shops are
 searched around that exact spot (500 m → 1 km → 2 km). The link works once and expires after 30 minutes.
 The buyer can also paste a Google Maps link (short `maps.app.goo.gl` links too), `geo:28.46,77.07` or
 `28.4672, 77.0710` in the chat. A typed area or pincode still works.

@@ -40,6 +40,7 @@ DEAL_TTL_S = 3 * 3600  # a saved deal older than this is dropped (prices may hav
 STATE_FILE = "grahak_state.json"
 LIVE_ASK = re.compile(r"^(?:send |share |bhejo |my |meri |current |live |gps |\W)*(?:location|loc|lokeshan)"
                       r"(?: link| bhejo| bhejna| share| please| do| de do)*$", re.I)  # "live location", "meri location bhejo"
+PLACE_TTL_S = 2 * 3600  # a saved location counts as "current" this long, then the agent asks again (people move)
 DIRECTORY_TIMEOUT_S = 25  # the live map search takes ~5 s, more when the service is slow
 YES = {"haan", "han", "haa", "ha", "yes", "y", "ok", "okay", "order", "confirm", "kar do", "haan ji"}
 YES_WORDS = {"haan", "han", "haa", "ha", "yes", "y", "ok", "okay", "order", "confirm", "ji", "theek", "thik", "hai", "done"}
@@ -126,11 +127,21 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
     pending: dict[str, dict] = {  # buyer address -> the deal waiting for "haan"
         b: {**d, "verdict": Verdict(**d["verdict"])} for b, d in saved.get("pending", {}).items()
         if time.time() - d.get("at", 0) < DEAL_TTL_S}
-    # buyer address -> last area they typed, or their live location {"lat", "lng", "acc"} (GPS link / Maps link / lat,lng)
-    places: dict[str, str | dict] = saved.get("places", {})
+    # buyer address -> where they are now: {"lat", "lng", "acc"} (GPS link / Maps pin / lat,lng) or {"place"} (typed area),
+    # plus "at" (when they told us). Older than PLACE_TTL_S = not current any more.
+    places: dict[str, dict] = {b: p for b, p in saved.get("places", {}).items() if isinstance(p, dict)}
     sessions: dict[str, object] = {}  # buyer address -> session of their last chat message (to reply from the GPS link)
     waiting: dict[str, tuple] = {  # buyer address -> (items, unknown, budget) until they tell us their area
         b: ([Item(**i) for i in w[0]], w[1], w[2]) for b, w in saved.get("waiting", {}).items()}
+
+    def here(buyer: str) -> dict | None:
+        """The buyer's current location, if they gave one in the last PLACE_TTL_S."""
+        p = places.get(buyer)
+        return p if p and time.time() - p.get("at", 0) < PLACE_TTL_S else None
+
+    def set_here(buyer: str, spot: dict):
+        places[buyer] = {**spot, "at": time.time()}
+        save_state()
 
     def save_state():
         state.save(STATE_FILE, {
@@ -187,8 +198,7 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
             return
         items, unknown, budget, place = await make_list(ctx, text)
         if place:
-            places[buyer] = place
-            save_state()
+            set_here(buyer, {"place": place})
         if not items and unknown:
             await reply(ctx, buyer, "Maaf kijiye, yeh abhi list mein nahi hai: " + ", ".join(unknown) + ".\n\n"
                                     "Streetwise par roz ka kirana saaman milta hai, jaise doodh, atta, dal, chawal, tel, "
@@ -199,15 +209,21 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
             await reply(ctx, buyer, f"Samjha nahi. Order ke liye sirf **{' / '.join(str(i) for i in range(1, n + 1))}** "
                                     "ya **haan** likhein, ya naya saaman bataiye.")
             return
-        if not items:
-            await reply(ctx, buyer, "Namaste! Main **Streetwise** hoon, aapke mohalle ki dukaanon se daam poochta hoon.\n\n"
-                                    "Bataiye kya chahiye aur aap kahan hain, jaise: "
-                                    "*Paneer butter masala for 4 near Sector 29 Gurgaon, Rs 500 tak*")
+        if not items:  # chat start / greeting: ask for the current location first
+            hello = "Namaste! Main **Streetwise** hoon, aapke mohalle ki dukaanon se daam poochta hoon.\n\n"
+            if here(buyer):
+                await reply(ctx, buyer, hello + "📍 Aapki location mere paas hai. Bataiye kya chahiye, jaise "
+                                                "*doodh, bread aur anda* ya *Paneer butter masala for 4, Rs 500 tak*.\n\n"
+                                                f"Kahin aur hain? Nayi live location bhejein: {locate.link(buyer)}")
+            else:
+                await reply(ctx, buyer, hello + f"📍 **Pehle apni live location bhejein** (ek tap): {locate.link(buyer)}\n\n"
+                                                "Phir bataiye kya chahiye, jaise *doodh, bread aur anda*. "
+                                                "Ya area likhein: *Paneer butter masala for 4 near Sector 29 Gurgaon, Rs 500 tak*")
             return
         if scanned:  # the shop's QR already says where the buyer is
             await get_quotes(ctx, buyer, items, unknown, budget, scanned=scanned)
             return
-        if not places.get(buyer):
+        if not here(buyer):
             waiting[buyer] = (items, unknown, budget)
             save_state()
             await reply(ctx, buyer, where_are_you(buyer))
@@ -221,14 +237,13 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
 
     async def got_location(ctx: Context, buyer: str, spot: dict, rest: str = "") -> bool:
         """Saves the buyer's live location / pasted place. Returns True when this message is fully handled."""
-        places[buyer] = spot
+        set_here(buyer, spot)
         ctx.logger.info(f"location from {buyer[:16]}…: {spot}")
         if buyer in waiting:
             got = waiting.pop(buyer)
             save_state()
             await get_quotes(ctx, buyer, *got)
             return True
-        save_state()
         if rest.strip(" .!"):
             return False  # "milk and bread <maps link>": carry on with the items
         await reply(ctx, buyer, "📍 Location mil gayi! Ab bataiye kya chahiye, jaise *doodh, bread aur anda*.")
@@ -263,14 +278,14 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
     async def get_quotes(ctx: Context, buyer: str, items: list[Item], unknown: list[str], budget: int | None,
                          scanned: str | None = None):
         ctx.logger.info("item list: " + ", ".join(f"{i.name} x{i.qty}" for i in items) + (f" | budget Rs {budget}" if budget else ""))
-        spot = places.get(buyer, "")
+        spot = places.get(buyer) or {}
         intro: list[str] = []
-        if isinstance(spot, dict) and "lat" in spot:  # live location: search around the buyer's own pin
+        if "lat" in spot:  # live location: search around the buyer's own pin
             search = ShopSearch(lat=spot["lat"], lng=spot["lng"], live=True)
             intro.append(f"📍 Aapki live location ke paas ki dukaanein (±{spot['acc']} m)." if spot.get("acc")
                          else "📍 Aapke bheje Maps pin ke paas ki dukaanein.")
         else:
-            place = spot.get("place", "") if isinstance(spot, dict) else spot
+            place = spot.get("place", "")
             search = ShopSearch(lat=BUYER_DEFAULT["lat"], lng=BUYER_DEFAULT["lng"], place=place)
         if scanned:
             done, why, here = await try_scanned(ctx, buyer, items, unknown, budget, scanned)
@@ -412,7 +427,11 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
                                      "Location aate hi main aapke paas ki dukaanein dhoondh dunga.")
             return
         if sender in waiting and text.strip(" .!").lower() in {"done", "ho gaya", "sent", "bhej diya", "ok"}:
-            await reply(ctx, sender, "Abhi location nahi aayi. " + where_are_you(sender))
+            if here(sender):  # the GPS came in but the reply didn't reach ASI:One: carry on now
+                await get_quotes(ctx, sender, *waiting.pop(sender))
+                save_state()
+            else:
+                await reply(ctx, sender, "Abhi location nahi aayi. " + where_are_you(sender))
             return
         spot, rest = await asyncio.to_thread(locate.find, text)
         if spot and await got_location(ctx, sender, spot, rest):
@@ -421,7 +440,7 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
         pick = choice(text, len(pending[sender]["verdict"].options)) if sender in pending else None
         area = area_reply(text) if sender in waiting and not pick else None
         if area:
-            places[sender] = area
+            set_here(sender, {"place": area})
             got = waiting.pop(sender)
             save_state()
             await get_quotes(ctx, sender, *got)
