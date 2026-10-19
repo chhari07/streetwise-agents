@@ -9,7 +9,7 @@ the order with a **Verified Receipt**. The shop owner confirms with one tap. If 
 closed, its QR still helps: it sends you to the nearest open shop. Each shop's agent pays Streetwise's
 per-order agent charge in **FET on the Fetch.ai testnet**, checked on-chain.
 
-Built by **Team SOLOX** (Aman Kumar Chhari, solo developer) for **Fetch-A-Thon 3.0**.
+Built by  SOLOX
 
 **Try it in ASI:One:** `agent1qfv4qg39ul92cqj29degg2zs36gkr04ga59kwd85eqr0xlmedsr07zveljw`
 
