@@ -43,7 +43,7 @@ Buyer: scan a shop's QR  ─┐
 | Agent | Code name | File | What it does |
 |---|---|---|---|
 | ① Shopper Agent | `streetwise-grahak` | `grahak.py` | Chats in ASI:One (Agent Chat Protocol), makes the item list with the ASI1 LLM, asks shops, shows up to 3 checked options, places the order, collects the agent charge |
-| ② Store Locator Agent | `streetwise-directory` | `directory.py` | Finds the buyer's area and real shops (OpenStreetMap), widening 500 m → 1 km → 2 km until it has 3; looks up a scanned shop by its QR |
+| ② Store Locator Agent | `streetwise-directory` | `directory.py` | Finds real shops (OpenStreetMap) around the buyer's live location, a Maps pin or a typed area, widening 500 m → 1 km → 2 km until it has 3; looks up a scanned shop by its QR |
 | ③ Merchant Agent | `streetwise-dukaan-<shop>` | `dukaan.py` | **One per shop.** Quotes from the shop's own price list, asks the owner YES / NO for each order, pays the agent charge |
 | ④ Trust Agent | `streetwise-guardian` | `guardian.py` | Blocks hidden fees, raised fees and closed shops; builds the cheapest / nearest / one-shop options |
 
@@ -77,12 +77,32 @@ python test_flow.py --no-llm --qr --offline   # QR path: scanned shop is closed 
 python test_flow.py --no-llm --qr --offline --testnet   # + real FET agent charge on the Fetch.ai testnet
 python test_flow.py --no-llm --qr --offline --map       # + live map on http://localhost:8090/map
 python test_flow.py --no-llm             # live OpenStreetMap shops
+python test_flow.py --no-llm --live      # buyer shares live GPS through the location link
+python test_flow.py --no-llm --say "milk and bread https://maps.google.com/?q=28.5677,77.2433" haan   # Maps link
 python test_flow.py                      # with the ASI1 LLM
 
 python run_all.py                 # real run: Shopper Agent reachable from ASI:One
                                   # + shop owner's YES / NO screen: http://localhost:8090
                                   # + live Streetwise Grid map:    http://localhost:8090/map
                                   # + agent charge in FET on the Fetch.ai testnet
+                                  # + buyer's live-location page:  http://localhost:8091/here/<token>
+```
+
+### Live location
+
+When the buyer doesn't say where they are (or types `live location`), the Shopper Agent sends a one-time
+link. The buyer taps **Share my live location**, the browser's GPS goes back to the agent, and shops are
+searched around that exact spot (500 m → 1 km → 2 km). The link works once and expires after 30 minutes.
+The buyer can also paste a Google Maps link (short `maps.app.goo.gl` links too), `geo:28.46,77.07` or
+`28.4672, 77.0710` in the chat. A typed area or pincode still works.
+
+Browsers share GPS only on `https` or `localhost`. On the same laptop the `localhost:8091` link works as is.
+For a phone, open a free tunnel to the location page only (the owner screen on 8090 stays private) and
+tell the agent its address:
+
+```bash
+cloudflared tunnel --url http://localhost:8091      # prints https://<name>.trycloudflare.com
+STREETWISE_PUBLIC_URL=https://<name>.trycloudflare.com python run_all.py
 ```
 
 For `run_all.py`: open the Agent inspector link from the log → Connect → Mailbox. Then chat with the agent in ASI:One.
@@ -91,6 +111,8 @@ For `run_all.py`: open the Agent inspector link from the log → Connect → Mai
 
 - `Paneer butter masala for 4 near Sector 29 Gurgaon, Rs 500 tak`, then `haan`
 - `milk, bread and eggs near Lajpat Nagar Delhi`, then `1`
+- `milk, bread and eggs`: the agent asks where you are and sends a live-location link; tap it and allow location
+- `milk and bread https://maps.app.goo.gl/...`: a Maps pin instead of GPS
 - `QR bansal: milk, bread and eggs`: what a QR sticker on Bansal General Store sends. The shop is closed,
   so you get the nearest open shops.
 - With `run_all.py`, open http://localhost:8090 and tap **YES** to confirm the order as the shop owner,
@@ -98,7 +120,8 @@ For `run_all.py`: open the Agent inspector link from the log → Connect → Mai
 
 ## What is real and what is demo
 
-- **Real:** the agents and messages, the Agentverse / ASI:One connection, the OpenStreetMap shop search
+- **Real:** the agents and messages, the Agentverse / ASI:One connection, the buyer's live location (GPS link
+  or Maps pin), the OpenStreetMap shop search
   (names, locations, opening hours), the Trust Agent checks, and the agent-charge payment: a real FET
   transfer on the Fetch.ai testnet, verified on-chain (offline tests use `STREETWISE_PAYMENT=demo`).
 - **Demo:** prices. Shops haven't joined Streetwise yet, so real map shops get steady demo prices
@@ -114,6 +137,7 @@ For `run_all.py`: open the Agent inspector link from the log → Connect → Mai
 |---|---|
 | `run_all.py` | starts every agent (one Merchant Agent per shop) and the owner screen |
 | `test_flow.py` | local end-to-end test: a fake buyer chats exactly like ASI:One |
+| `locate.py` | buyer's live location: one-time GPS link page (port 8091) and Maps link / `lat,lng` reading |
 | `owner.py` | shop owner's YES / NO screen (`STREETWISE_OWNER=panel`), or an auto rule for tests |
 | `grid.py` | live Streetwise Grid map (Leaflet + OpenStreetMap) fed by the agents |
 | `payments.py` | agent charge: FET transfer + on-chain check on the Fetch.ai testnet (`STREETWISE_PAYMENT=testnet`) |

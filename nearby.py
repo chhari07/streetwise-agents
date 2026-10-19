@@ -16,6 +16,7 @@ from shop_data import distance_m, real_hours
 
 UA = "Streetwise-agents/0.1 (Fetch-A-Thon 3.0 demo)"
 NOMINATIM = "https://nominatim.openstreetmap.org/search"
+NOMINATIM_REVERSE = "https://nominatim.openstreetmap.org/reverse"
 SHOP_SEARCHES = ["supermarket", "convenience store", "dairy shop", "greengrocer"]
 SHOP_KINDS = {"supermarket", "convenience", "general", "grocery", "dairy", "greengrocer"}
 MAX_SHOPS = 6
@@ -33,12 +34,12 @@ def offline() -> bool:
     return os.getenv("STREETWISE_OFFLINE") == "1"
 
 
-def _search(params: dict) -> list[dict]:
+def _search(params: dict, url: str = NOMINATIM) -> list[dict] | dict:
     global _last_call
     time.sleep(max(0.0, 1.05 - (time.time() - _last_call)))  # 1 request per second
     _last_call = time.time()
-    q = urllib.parse.urlencode({**params, "format": "json", "countrycodes": "in"})
-    req = urllib.request.Request(f"{NOMINATIM}?{q}", headers={"User-Agent": UA})
+    q = urllib.parse.urlencode({**params, "format": "json", **({"countrycodes": "in"} if url == NOMINATIM else {})})
+    req = urllib.request.Request(f"{url}?{q}", headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=8) as r:
         return json.loads(r.read())
 
@@ -54,6 +55,21 @@ def geocode(place: str) -> tuple[float, float, str] | None:
         except Exception:
             return None  # don't cache network errors
     return _geo_cache[key]
+
+
+def reverse(lat: float, lng: float) -> str | None:
+    """Live location -> a readable area name, e.g. "Sector 29, Gurugram, Haryana, India"."""
+    key = f"{lat:.4f},{lng:.4f}"
+    if offline():
+        return None
+    if key not in _geo_cache:
+        try:
+            hit = _search({"lat": lat, "lon": lng, "zoom": 16}, NOMINATIM_REVERSE)
+            name = hit.get("display_name") if isinstance(hit, dict) else None
+            _geo_cache[key] = (lat, lng, name) if name else None
+        except Exception:
+            return None
+    return _geo_cache[key][2] if _geo_cache[key] else None
 
 
 def osm_shops(lat: float, lng: float, radius_m: int = 500) -> list[dict] | None:

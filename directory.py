@@ -13,7 +13,7 @@ from uagents import Agent, Context
 
 import grid
 from models import ShopInfo, ShopList, ShopSearch
-from nearby import geocode, osm_shops, ring_of, ripple
+from nearby import geocode, osm_shops, reverse, ring_of, ripple
 from shop_data import BUYER_DEFAULT, REGISTRY, SHOPS, demo_shop, distance_m, real_hours, register, trick_shop
 
 
@@ -44,7 +44,10 @@ def make_directory(seed: str, dukaan_address: str, shop_agents: dict[str, str] |
             await ctx.send(sender, ShopList(shops=shops, area=s["name"] if s else "", note="" if s else "QR shop not found"))
             return
         lat, lng, area, note = req.lat, req.lng, BUYER_DEFAULT["area"], ""
-        if req.place:
+        if req.live:  # the buyer's own GPS / Maps pin: search right there
+            name = await asyncio.to_thread(reverse, lat, lng)
+            area = f"{name} (live location)" if name else f"Live location {lat:.4f}, {lng:.4f}"
+        elif req.place:
             spot = await asyncio.to_thread(geocode, req.place)
             if spot:
                 lat, lng, area = spot

@@ -3,6 +3,7 @@
     python run_all.py           # real run: Grahak gets a mailbox so ASI:One can reach it,
                                 # + shop owner's YES / NO screen on http://localhost:8090, live map on /map
                                 # + agent charge paid in FET on the Fetch.ai testnet (STREETWISE_PAYMENT=testnet)
+                                # + buyer's live-location page on http://localhost:8091/here/<token> (locate.py)
     python test_flow.py         # local test without ASI:One (see that file)
 
 Every demo shop in shops.json runs its own Merchant (Dukaan) agent with its own address.
@@ -57,8 +58,10 @@ def build(mailbox: bool = True, use_llm: bool = True) -> tuple[Bureau, Agent, li
 
 
 async def run_split(bureau: Bureau, grahak: Agent):
+    import locate
     import owner
-    await asyncio.gather(grahak.run_async(), bureau.run_async(), owner.run_panel())  # owner screen + /map
+    await asyncio.gather(grahak.run_async(), bureau.run_async(), owner.run_panel(),  # owner screen + /map
+                         locate.run_server())  # buyer's live-location link
 
 
 if __name__ == "__main__":

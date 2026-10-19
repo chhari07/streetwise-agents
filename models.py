@@ -25,6 +25,7 @@ class ShopSearch(Model):  # Grahak -> Directory
     radius_m: int = 500  # first ring; Directory widens 500 m -> 1 km -> 2 km until it has enough shops
     place: str = ""  # area / locality / pincode the buyer typed, e.g. "Sector 14 Gurgaon"
     shop_id: str = ""  # set when the buyer scanned a shop's QR: Directory returns just that shop
+    live: bool = False  # lat / lng are the buyer's own live location (GPS or a Maps link), not the demo default
 
 
 class ShopInfo(Model):

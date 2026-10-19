@@ -25,6 +25,7 @@ from uagents_core.contrib.protocols.payment import (CancelPayment, CommitPayment
                                                     RequestPayment, payment_protocol_spec)
 
 import grid
+import locate
 import owner
 import payments
 from models import (CheckQuotes, Item, OrderRequest, OrderResult, QuoteList, QuoteRequest, ShopList, ShopOrder,
@@ -37,6 +38,8 @@ ORDER_TIMEOUT_S = owner.OWNER_TIMEOUT_S + 15 if owner.MODE == "panel" else QUOTE
 QR = re.compile(r"^\s*(?:qr|scan(?:ned)?)\s*[:#-]?\s*([a-z0-9][\w-]*)\s*[:,\-]?\s*(.*)$", re.I | re.S)
 DEAL_TTL_S = 3 * 3600  # a saved deal older than this is dropped (prices may have changed)
 STATE_FILE = "grahak_state.json"
+LIVE_ASK = re.compile(r"^(?:send |share |bhejo |my |meri |current |live |gps |\W)*(?:location|loc|lokeshan)"
+                      r"(?: link| bhejo| bhejna| share| please| do| de do)*$", re.I)  # "live location", "meri location bhejo"
 DIRECTORY_TIMEOUT_S = 25  # the live map search takes ~5 s, more when the service is slow
 YES = {"haan", "han", "haa", "ha", "yes", "y", "ok", "okay", "order", "confirm", "kar do", "haan ji"}
 YES_WORDS = {"haan", "han", "haa", "ha", "yes", "y", "ok", "okay", "order", "confirm", "ji", "theek", "thik", "hai", "done"}
@@ -123,7 +126,9 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
     pending: dict[str, dict] = {  # buyer address -> the deal waiting for "haan"
         b: {**d, "verdict": Verdict(**d["verdict"])} for b, d in saved.get("pending", {}).items()
         if time.time() - d.get("at", 0) < DEAL_TTL_S}
-    places: dict[str, str] = saved.get("places", {})  # buyer address -> last area they told us
+    # buyer address -> last area they typed, or their live location {"lat", "lng", "acc"} (GPS link / Maps link / lat,lng)
+    places: dict[str, str | dict] = saved.get("places", {})
+    sessions: dict[str, object] = {}  # buyer address -> session of their last chat message (to reply from the GPS link)
     waiting: dict[str, tuple] = {  # buyer address -> (items, unknown, budget) until they tell us their area
         b: ([Item(**i) for i in w[0]], w[1], w[2]) for b, w in saved.get("waiting", {}).items()}
 
@@ -205,9 +210,29 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
         if not places.get(buyer):
             waiting[buyer] = (items, unknown, budget)
             save_state()
-            await reply(ctx, buyer, "Aap kahan hain? Apna area ya pincode likhein, jaise *Lajpat Nagar Delhi* ya *110024*.")
+            await reply(ctx, buyer, where_are_you(buyer))
             return
         await get_quotes(ctx, buyer, items, unknown, budget)
+
+    def where_are_you(buyer: str) -> str:
+        return ("Aap kahan hain?\n\n"
+                f"📍 **Live location bhejein** (sabse sahi, ek tap): {locate.link(buyer)}\n\n"
+                "Ya apna area / pincode likhein, jaise *Lajpat Nagar Delhi* ya *110024*, ya Google Maps ka link paste karein.")
+
+    async def got_location(ctx: Context, buyer: str, spot: dict, rest: str = "") -> bool:
+        """Saves the buyer's live location / pasted place. Returns True when this message is fully handled."""
+        places[buyer] = spot
+        ctx.logger.info(f"location from {buyer[:16]}…: {spot}")
+        if buyer in waiting:
+            got = waiting.pop(buyer)
+            save_state()
+            await get_quotes(ctx, buyer, *got)
+            return True
+        save_state()
+        if rest.strip(" .!"):
+            return False  # "milk and bread <maps link>": carry on with the items
+        await reply(ctx, buyer, "📍 Location mil gayi! Ab bataiye kya chahiye, jaise *doodh, bread aur anda*.")
+        return True
 
     async def try_scanned(ctx: Context, buyer: str, items: list[Item], unknown: list[str], budget: int | None, sid: str):
         """Asks the scanned shop first. Returns (handled, why it wasn't, the shop) so the caller can search around it."""
@@ -238,8 +263,15 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
     async def get_quotes(ctx: Context, buyer: str, items: list[Item], unknown: list[str], budget: int | None,
                          scanned: str | None = None):
         ctx.logger.info("item list: " + ", ".join(f"{i.name} x{i.qty}" for i in items) + (f" | budget Rs {budget}" if budget else ""))
-        search = ShopSearch(lat=BUYER_DEFAULT["lat"], lng=BUYER_DEFAULT["lng"], place=places.get(buyer, ""))
+        spot = places.get(buyer, "")
         intro: list[str] = []
+        if isinstance(spot, dict) and "lat" in spot:  # live location: search around the buyer's own pin
+            search = ShopSearch(lat=spot["lat"], lng=spot["lng"], live=True)
+            intro.append(f"📍 Aapki live location ke paas ki dukaanein (±{spot['acc']} m)." if spot.get("acc")
+                         else "📍 Aapke bheje Maps pin ke paas ki dukaanein.")
+        else:
+            place = spot.get("place", "") if isinstance(spot, dict) else spot
+            search = ShopSearch(lat=BUYER_DEFAULT["lat"], lng=BUYER_DEFAULT["lng"], place=place)
         if scanned:
             done, why, here = await try_scanned(ctx, buyer, items, unknown, budget, scanned)
             if done:
@@ -249,7 +281,8 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
                 search = ShopSearch(lat=here.lat, lng=here.lng)
         shops = await ask(ctx, directory, search, ShopList, timeout=DIRECTORY_TIMEOUT_S)
         if not shops or not shops.shops:
-            await reply(ctx, buyer, "Maaf kijiye, aapke paas koi dukaan nahi mili. Apna area dobara likhein, jaise *near Lajpat Nagar Delhi*.")
+            await reply(ctx, buyer, "Maaf kijiye, aapke paas koi dukaan nahi mili. Apna area dobara likhein, jaise *near Lajpat Nagar Delhi*, "
+                                    f"ya live location bhejein: {locate.link(buyer)}")
             return
         rid = uuid.uuid4().hex[:8]
         groups = by_agent(shops.shops)
@@ -373,6 +406,18 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
         # ASI:One passes the "@agent1q... " / "@streetwise-grahak" mention along with the text: drop it
         text = re.sub(r"@[\w.-]+", " ", msg.text()).strip()
         ctx.logger.info(f"From {sender[:16]}…: {text}")
+        sessions[sender] = ctx.session
+        if LIVE_ASK.match(text.strip()):  # "live location", "meri location bhejo": send the GPS link
+            await reply(ctx, sender, f"📍 Is link par tap karke **Share my live location** dabaiye: {locate.link(sender)}\n\n"
+                                     "Location aate hi main aapke paas ki dukaanein dhoondh dunga.")
+            return
+        if sender in waiting and text.strip(" .!").lower() in {"done", "ho gaya", "sent", "bhej diya", "ok"}:
+            await reply(ctx, sender, "Abhi location nahi aayi. " + where_are_you(sender))
+            return
+        spot, rest = await asyncio.to_thread(locate.find, text)
+        if spot and await got_location(ctx, sender, spot, rest):
+            return
+        text = rest if spot else text
         pick = choice(text, len(pending[sender]["verdict"].options)) if sender in pending else None
         area = area_reply(text) if sender in waiting and not pick else None
         if area:
@@ -393,6 +438,14 @@ def make_grahak(seed: str, directory: str, guardian: str, llm=None, **agent_kwar
     @chat.on_message(ChatAcknowledgement)
     async def on_ack(ctx: Context, sender: str, msg: ChatAcknowledgement):
         pass
+
+    @agent.on_interval(period=1.0)
+    async def live_locations(ctx: Context):
+        """GPS from the live-location link (locate.py) -> search shops around it, in the buyer's chat session."""
+        for buyer, lat, lng, acc in locate.drain():
+            if buyer in sessions:
+                ctx._session = sessions[buyer]  # reply in the same ASI:One chat the buyer is in
+            await got_location(ctx, buyer, {"lat": lat, "lng": lng, "acc": acc})
 
     def receipt(order_id: str, chosen, confirms, addr: dict[str, str]) -> str:
         """Verified Receipt card: every line and every charge, checked before the buyer pays."""
