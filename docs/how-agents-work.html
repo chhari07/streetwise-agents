@@ -1,0 +1,131 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0C10;--panel:#11151B;--line:#263040;--ink:#E6EAF0;--mu:#8A94A6;--or:#FF5A1F;--cy:#38BDF8;--gr:#22C55E;--rd:#F43F5E;--ye:#FACC15;--vi:#A78BFA}
+*{box-sizing:border-box}
+body{margin:0;width:1600px;height:1460px;background:var(--bg);color:var(--ink);font:16px/1.45 Inter,sans-serif;position:relative;overflow:hidden;
+ background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:40px 40px}
+.glow{position:absolute;width:900px;height:600px;right:-200px;top:-260px;background:radial-gradient(closest-side,rgba(255,90,31,.22),transparent);pointer-events:none}
+.mono{font-family:'JetBrains Mono',monospace}
+header{padding:44px 60px 0;display:flex;justify-content:space-between;align-items:flex-end}
+.crumb{color:var(--mu);font-size:14px;letter-spacing:.12em;text-transform:uppercase}
+h1{margin:6px 0 0;font-size:54px;font-weight:800;letter-spacing:-.02em}
+h1 span{color:var(--or)}
+.sub{color:var(--mu);font-size:18px;margin-top:6px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:620px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--ink)}
+.chip b{color:var(--gr)}
+.sec{position:absolute;left:60px;font-size:14px;letter-spacing:.14em;color:var(--or);font-weight:700}
+.dia{position:absolute;left:0;top:280px;width:1600px;height:640px}
+.card{position:absolute;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.card .t{font-weight:800;font-size:19px;letter-spacing:.01em}
+.card .c{font-size:13px;color:var(--mu);margin-top:2px}
+.card .d{font-size:15px;margin-top:10px;color:#C9D1DC}
+.ext{border-style:dashed;background:rgba(17,21,27,.6)}
+.num{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--or);color:#0A0C10;font-weight:800;font-size:15px;margin-right:10px;vertical-align:2px}
+svg{position:absolute;left:0;top:0}
+.lbl{font:500 13px 'JetBrains Mono',monospace}
+.steps{position:absolute;left:60px;top:1000px;width:1480px;display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.st{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 16px 14px;border-top:3px solid var(--c)}
+.st h3{margin:0 0 10px;font-size:15px;letter-spacing:.1em;color:var(--c)}
+.st ol{margin:0;padding-left:18px;font-size:14px;color:#C9D1DC}
+.st li{margin:0 0 8px}
+.st code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--ink);background:#0B0F14;border:1px solid var(--line);border-radius:6px;padding:1px 5px}
+.run{position:absolute;left:60px;top:1290px;width:1480px;background:#07090C;border:1px solid var(--line);border-radius:16px;padding:16px 20px;font:14px/1.7 'JetBrains Mono',monospace;color:#C9D1DC}
+.run .h{color:var(--mu);font-size:12px;letter-spacing:.12em;margin-bottom:4px}
+.run b{color:var(--ink)}.run .ok{color:var(--gr)}.run .bad{color:var(--rd)}.run .o{color:var(--or)}
+footer{position:absolute;left:60px;right:60px;bottom:22px;display:flex;justify-content:space-between;color:var(--mu);font-size:13px}
+</style></head><body><div class="glow"></div>
+<header><div>
+ <div class="crumb mono">STREETWISE / AGENTS / HOW IT WORKS</div>
+ <h1>How the <span>Streetwise</span> agents work</h1>
+ <div class="sub">Every local shop gets its own AI agent. The buyer chats once in ASI:One; the agents find, check, order and pay.</div>
+</div><div class="chips">
+ <div class="chip"><b>●</b> Fetch.ai uAgents (Python)</div><div class="chip"><b>●</b> Agentverse mailbox</div>
+ <div class="chip"><b>●</b> ASI:One + Agent Chat Protocol</div><div class="chip"><b>●</b> AgentPaymentProtocol</div>
+ <div class="chip"><b>●</b> ASI1 LLM</div><div class="chip"><b>●</b> OpenStreetMap</div><div class="chip"><b>●</b> Live GPS</div>
+</div></header>
+
+<div class="sec mono" style="top:252px">01 · WHO TALKS TO WHOM</div>
+<div class="dia">
+<svg width="1600" height="640" viewBox="0 0 1600 640">
+ <defs>
+  <marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker>
+ </defs>
+ <g fill="none" stroke-width="2.5">
+  <path d="M352 320 H500" stroke="#E6EAF0" marker-start="url(#m)" marker-end="url(#m)"/>
+  <path d="M820 280 C880 280 880 125 960 125" stroke="#22C55E" marker-start="url(#m)" marker-end="url(#m)"/>
+  <path d="M820 320 H960" stroke="#F43F5E" marker-start="url(#m)" marker-end="url(#m)"/>
+  <path d="M820 360 C880 360 880 515 960 515" stroke="#FF5A1F" marker-start="url(#m)" marker-end="url(#m)"/>
+  <path d="M1270 115 H1330" stroke="#8A94A6" stroke-dasharray="6 6" marker-start="url(#m)" marker-end="url(#m)"/>
+  <path d="M1270 490 H1330" stroke="#A78BFA" stroke-dasharray="6 6" marker-start="url(#m)" marker-end="url(#m)"/>
+  <path d="M1270 560 C1300 560 1300 590 1330 590" stroke="#A78BFA" stroke-dasharray="6 6" marker-end="url(#m)"/>
+ </g>
+ <text class="lbl" x="372" y="306" fill="#E6EAF0">ChatMessage</text>
+ <text class="lbl" x="806" y="112" fill="#22C55E">ShopSearch</text><text class="lbl" x="806" y="130" fill="#22C55E">↔ ShopList</text>
+ <text class="lbl" x="836" y="306" fill="#F43F5E">CheckQuotes</text><text class="lbl" x="836" y="345" fill="#F43F5E">↔ Verdict</text>
+ <text class="lbl" x="806" y="560" fill="#FF5A1F">QuoteRequest</text><text class="lbl" x="806" y="578" fill="#FF5A1F">OrderRequest</text><text class="lbl" x="806" y="596" fill="#FF5A1F">RequestPayment</text>
+</svg>
+ <div class="card" style="left:60px;top:220px;width:290px;height:200px">
+  <div class="t">Buyer in ASI:One</div><div class="c mono">any phone · Hinglish ok</div>
+  <div class="d">"milk, bread and eggs"<br>📍 shares live location<br>or types an area / scans a shop QR</div>
+ </div>
+ <div class="card" style="left:504px;top:200px;width:314px;height:240px;border:1.5px solid var(--or);box-shadow:0 0 60px rgba(255,90,31,.18)">
+  <div class="t"><span class="num">1</span>Shopper Agent</div><div class="c mono">streetwise-grahak · mailbox</div>
+  <div class="d">Chats with the buyer, asks for the current location, turns the message into an item list (ASI1 LLM) and runs the whole deal.</div>
+ </div>
+ <div class="card" style="left:964px;top:40px;width:304px;height:170px">
+  <div class="t"><span class="num" style="background:var(--gr)">2</span>Store Locator Agent</div><div class="c mono">streetwise-directory</div>
+  <div class="d">Finds real open shops around the buyer: 500 m → 1 km → 2 km.</div>
+ </div>
+ <div class="card" style="left:964px;top:240px;width:304px;height:160px">
+  <div class="t"><span class="num" style="background:var(--rd)">4</span>Trust Agent</div><div class="c mono">streetwise-guardian</div>
+  <div class="d">Blocks hidden fees, raised prices and closed shops. Builds 1–3 checked options.</div>
+ </div>
+ <div class="card" style="left:964px;top:430px;width:304px;height:170px">
+  <div class="t"><span class="num">3</span>Merchant Agents</div><div class="c mono">streetwise-dukaan-&lt;shop&gt;</div>
+  <div class="d">One per shop. Quotes from its price list, asks the owner, pays the agent charge.</div>
+ </div>
+ <div class="card ext" style="left:1334px;top:55px;width:206px;height:120px">
+  <div class="t" style="font-size:16px">OpenStreetMap</div><div class="d" style="margin-top:6px;font-size:13.5px">real shops, hours,<br>area name from GPS</div>
+ </div>
+ <div class="card ext" style="left:1334px;top:440px;width:206px;height:96px">
+  <div class="t" style="font-size:16px">Shop owner</div><div class="d" style="margin-top:4px;font-size:13.5px">one tap YES / NO</div>
+ </div>
+ <div class="card ext" style="left:1334px;top:552px;width:206px;height:80px;padding-top:14px">
+  <div class="t" style="font-size:16px">Fetch.ai testnet</div><div class="d" style="margin-top:2px;font-size:13.5px">FET, checked on-chain</div>
+ </div>
+</div>
+
+<div class="sec mono" style="top:965px">02 · ONE ORDER, STEP BY STEP</div>
+<div class="steps">
+ <div class="st" style="--c:var(--gr)"><h3>FIND SHOPS</h3><ol>
+  <li>Buyer says "hi"; agent replies with a one-time 📍 link</li>
+  <li>Buyer taps <b>Allow</b>: GPS goes to the agent</li>
+  <li><code>ShopSearch(lat, lng, live)</code> → Store Locator</li>
+  <li><code>ShopList</code>: nearby shops + their agents</li></ol></div>
+ <div class="st" style="--c:var(--or)"><h3>GET QUOTES</h3><ol>
+  <li><code>QuoteRequest</code> to every Merchant Agent at once</li>
+  <li><code>QuoteList</code>: price per item, fees, open now</li></ol></div>
+ <div class="st" style="--c:var(--rd)"><h3>CHECK</h3><ol>
+  <li><code>CheckQuotes</code> → Trust Agent</li>
+  <li><code>Verdict</code>: hidden-fee shop blocked, options 1–3</li>
+  <li>Buyer replies <b>1 / 2 / 3</b> or <b>haan</b></li></ol></div>
+ <div class="st" style="--c:var(--cy)"><h3>ORDER</h3><ol>
+  <li><code>OrderRequest</code> → the chosen shops' agents</li>
+  <li>Owner taps <b>YES</b> (60 s)</li>
+  <li><code>OrderResult</code> → <b>Verified Receipt</b> in chat</li></ol></div>
+ <div class="st" style="--c:var(--vi)"><h3>PAY AGENT CHARGE</h3><ol>
+  <li><code>RequestPayment</code> to the shop's agent</li>
+  <li>Shop agent sends FET on testnet → <code>CommitPayment</code></li>
+  <li>Verified on-chain → <code>CompletePayment</code>. Buyer pays ₹0 extra</li></ol></div>
+</div>
+
+<div class="run"><div class="h">REAL TEST RUN · test_flow.py --live</div>
+ <b>BUYER</b> milk, bread and eggs <span class="o">→</span> 📍 GPS ±18 m, IFFCO Chowk, Sector 29 Gurgaon <span class="o">→</span> 7 shops within 2 km (OpenStreetMap)
+ <span class="o">→</span> <span class="bad">Reliance mart blocked: hidden ₹30 packing fee</span><br>
+ <span class="o">→</span> option 1: <b>₹152 at Ellementry Gurugram</b> (bread ₹42 · milk ₹65 · eggs ₹45) <span class="o">→</span> <b>BUYER</b> haan <span class="o">→</span> <span class="ok">✓ order SW-DEMO confirmed, hidden fees ₹0</span>
+</div>
+<footer><span class="mono">github.com/chhari07/streetwise-agents</span><span>Demo prices and demo orders: shops haven't joined yet. Agent charge uses testnet FET.</span><span class="mono">Fetch-A-Thon 3.0 · Team SOLOX</span></footer>
+</body></html>

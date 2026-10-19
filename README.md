@@ -15,6 +15,8 @@ Built by **Team SOLOX** (Aman Kumar Chhari, solo developer) for **Fetch-A-Thon 3
 
 ## How it works
 
+![How the Streetwise agents work](docs/how-agents-work.png)
+
 ```
 Buyer: scan a shop's QR  ─┐
        chat from anywhere ─┤
@@ -137,6 +139,7 @@ For `run_all.py`: open the Agent inspector link from the log → Connect → Mai
 | File | |
 |---|---|
 | `run_all.py` | starts every agent (one Merchant Agent per shop) and the owner screen |
+| `docs/how-agents-work.png` | poster: how the agents work (source `docs/how-agents-work.html`, rendered with headless Chrome) |
 | `Streetwise_Agents_Flow.excalidraw` | diagram: who the agents are and the 24 messages of one order (open on excalidraw.com) |
 | `test_flow.py` | local end-to-end test: a fake buyer chats exactly like ASI:One |
 | `locate.py` | buyer's live location: one-time GPS link page (port 8091) and Maps link / `lat,lng` reading |
