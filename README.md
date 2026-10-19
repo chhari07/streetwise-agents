@@ -137,6 +137,7 @@ For `run_all.py`: open the Agent inspector link from the log → Connect → Mai
 | File | |
 |---|---|
 | `run_all.py` | starts every agent (one Merchant Agent per shop) and the owner screen |
+| `Streetwise_Agents_Flow.excalidraw` | diagram: who the agents are and the 24 messages of one order (open on excalidraw.com) |
 | `test_flow.py` | local end-to-end test: a fake buyer chats exactly like ASI:One |
 | `locate.py` | buyer's live location: one-time GPS link page (port 8091) and Maps link / `lat,lng` reading |
 | `owner.py` | shop owner's YES / NO screen (`STREETWISE_OWNER=panel`), or an auto rule for tests |
